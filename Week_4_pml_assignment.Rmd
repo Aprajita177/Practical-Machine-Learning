@@ -1,0 +1,118 @@
+---
+title: "WEEK4 COURSE PROJECT PML"
+author: "Aparajita Nandy"
+date: "22nd October' 2020"
+output:
+  html_document: default
+  word_document: default
+---
+
+**This is the week 4 final course project of the practical machine learning in this I will be using rstudio markdown and knitr. proceeding for the analysis.**
+
+*Introducing of the project:-*
+
+*Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively without costing much. This is for a group of enthusiasts who measures regularly to improve their health, to find patterns in their behavior* 
+
+*Firstly we will load the data and then proceed for the processing of the data and then we will do the exploratory analysis and proceed to prediction for which model to select and then finally for the prediction of the output of the testing set*
+
+
+```{r}
+library(caret)
+library(knitr)
+
+library(data.table)
+library(rpart.plot)
+library(rpart)
+
+library(gbm)
+library(ggplot2)
+
+library(corrplot)
+
+```
+*Now we will take the data and do the cleaning and then exploring the data.* 
+
+```{r}
+testUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+traUrl  <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+
+datatesting <- read.csv(url(testUrl))
+datatraining <- read.csv(url(traUrl))
+
+
+```
+*Now proceeding for the cleaning the input of the data*
+
+```{r}
+training_data1 <- datatraining[, colSums(is.na(datatraining)) == 0]
+testing_data1 <- datatesting[, colSums(is.na(datatesting)) == 0]
+```
+
+
+```{r}
+training_data1 <- training_data1[, -c(1:7)]
+testing_data1 <- testing_data1[, -c(1:7)]
+dim(training_data1)
+```
+
+```{r eval=FALSE}
+set.seed(1234)
+data_training <- createDataPartition(datatraining$classe, p = 0.7, list = FALSE)
+training_data1 <- training_data[data_training, ]
+testing_data1 <- testing_data[-datatraining, ]
+dim(training_data)
+dim(testing_data)
+```
+*now we will be removing the variables that are non zero from the data gives*
+```{r eval=FALSE}
+noneZero <- nearZeroVar(training_data)
+training_data <- training_data[, -noneZero]
+testing_data <- testing_data[, -noneZero]
+dim(training_data)
+dim(testing_data)
+```
+
+
+```{r eval=FALSE}
+plot_cor <- cor(training_data[, -53])
+corrplot(plot_cor, order = "FPC", method = "color", type = "upper", tl.cex = 0.8, tl.col = rgb(0, 0, 0))
+```
+
+now in this as we can see that the corr. predic. are the ones with the dark colour intersec.
+
+now we will be proceeding for the model building and for this we will use 2 different types of algorithms , trees and random forests for the prediction part 
+
+```{r eval=FALSE}
+set.seed(20000)
+tredec <- rpart(classe ~ ., data=training_data, method = "class")
+rpart.plot(tredec)
+```
+
+now we will be validate the model 
+```{r eval=FALSE}
+modelpre <- predict(tredec, testing_data, type = "class")
+ab <- confusionMatrix(modelpre, testing_data$classe)
+ab
+```
+
+```{r eval=FALSE}
+plot(modelpre)
+```
+
+*Now for the last part we will apply two models one by one 
+the first one will be general boosted model and then the second one will be gbm model for this.* 
+```{r eval=FALSE}
+set.seed(10000)
+ctr_gbm <- trainControl(method = "repeatedcv", number = 5, repeats = 1)
+valid_gbm <- train(classe ~ .,data=training_data, method = "gbm", trControl = ctr_gbm, verbose = FALSE)
+valid_gbm$finalModel
+```
+
+
+*So in this project, we tried to predict the data order wise and then perform the exercise, and then we create the analysis in which we did some cross-validation and why I chose this specific way towards approaching and then predicted for 20*.
+
+Thank you, mentors and university for the course.
+
+
+
+
